@@ -107,7 +107,8 @@ The ThreadLocal buffer optimization **would** show benefits in:
 **What we did next** (implemented ✅):
 - ✅ Removed progress reporting (100 prints) → saved ~25ms
 - ✅ Applied JVM tuning (-XX:+UseSerialGC, fixed heap, C1) → saved ~51ms
-- ✅ **Final result: 33ms total (15.8x faster than original 523ms)**
+- ✅ Removed redundant progressTracker field → additional cleanup
+- ✅ **Final result: 30.9ms total (16.9x faster than original 523ms)**
 - ❌ File I/O optimization (memory-mapped files) → reverted due to regression
 
 ## Technical Details
