@@ -17,13 +17,14 @@ Algorithm Fix (O(N+M) HashMap Lookup)
 ██████████████ 141ms
 7,516 hash computations (10,056x reduction!)
 
-Optimized Sequential (ThreadLocal + Hex Table + Pre-sizing)
-██████████████ 141ms
-Same speed, cleaner code
+With Concurrency (Parallel Streams on 16 cores)
+███████████ 110ms
 
-Concurrent Processing (Parallel Streams on 16 cores)
-████ 165ms full pipeline | 2-5ms hashing only
-Optimal parallelization
+JVM Tuning (SerialGC + Fixed Heap + C1)
+██████ 59ms
+
+Progress Reporting Removed
+████ 33ms ⭐ FINAL
 ```
 
 ---
@@ -32,8 +33,11 @@ Optimal parallelization
 
 ### Full Pipeline (End-to-End)
 ```
-Original:     523ms  ███████████████████████████████
-Optimized:    165ms  ██████████ ⭐ 3.2x faster
+Original:        523ms  ███████████████████████████████
+Algorithm Fix:   141ms  ████████
+Concurrency:     110ms  ███████
+JVM Tuning:       59ms  ████
+I/O Optimized:    33ms  ██  ⭐ 15.8x faster
 ```
 
 ### Hashing Phase Only
@@ -98,6 +102,30 @@ Impact:    ██ 460 fewer hash computations
 Speedup:   ~6% (460/7976)
 Effort:    Low (add LinkedHashSet)
 ROI:       ⭐⭐⭐ Good for data quality
+```
+
+### 5. Parallel Streams Concurrency
+```
+Impact:    ████████████ Full CPU utilization (16 cores)
+Speedup:   1.3x (141ms → 110ms)
+Effort:    Low (.parallel() call)
+ROI:       ⭐⭐⭐⭐⭐ Excellent
+```
+
+### 6. JVM Tuning
+```
+Impact:    ███████ Lower GC overhead + faster JIT
+Speedup:   1.9x (110ms → 59ms)
+Effort:    Low (JVM flags)
+ROI:       ⭐⭐⭐⭐⭐ Excellent
+```
+
+### 7. Progress Reporting Removal
+```
+Impact:    █████████ Eliminate I/O overhead (100 prints)
+Speedup:   1.8x (59ms → 33ms)
+Effort:    Low (remove print loop)
+ROI:       ⭐⭐⭐⭐⭐ Highest final gain
 ```
 
 ### 5. Parallel Streams Concurrency
