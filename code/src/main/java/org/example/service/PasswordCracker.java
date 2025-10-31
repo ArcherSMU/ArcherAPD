@@ -14,17 +14,14 @@ import java.util.Map;
 public class PasswordCracker {
     
     private final CrackingEngine crackingEngine;
-    private final ProgressTracker progressTracker;
     
     /**
      * Creates a PasswordCracker with a specific cracking engine.
      * 
      * @param crackingEngine The engine to use for hash computation
-     * @param progressTracker Progress reporting component
      */
-    public PasswordCracker(CrackingEngine crackingEngine, ProgressTracker progressTracker) {
+    public PasswordCracker(CrackingEngine crackingEngine) {
         this.crackingEngine = crackingEngine;
-        this.progressTracker = progressTracker;
     }
     
     /**
