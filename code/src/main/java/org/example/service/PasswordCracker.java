@@ -58,6 +58,7 @@ public class PasswordCracker {
     
     /**
      * Looks up passwords for all users using the hash table.
+     * No progress reporting during lookup for maximum performance.
      * 
      * @param users List of users
      * @param hashToPassword Hash lookup table
@@ -65,22 +66,18 @@ public class PasswordCracker {
      */
     private int lookupUserPasswords(List<User> users, Map<String, String> hashToPassword) {
         int passwordsFound = 0;
-        int usersChecked = 0;
-        int totalUsers = users.size();
         
         for (User user : users) {
-            usersChecked++;
             String crackedPassword = hashToPassword.get(user.getHashedPassword());
             
             if (crackedPassword != null) {
                 user.setFoundPassword(crackedPassword);
                 passwordsFound++;
             }
-            
-            if (usersChecked % 100 == 0) {
-                progressTracker.reportLookupProgress(usersChecked, totalUsers, passwordsFound);
-            }
         }
+        
+        // Report final result only
+        System.out.println("Password lookup complete: " + passwordsFound + " / " + users.size() + " passwords found");
         
         return passwordsFound;
     }
