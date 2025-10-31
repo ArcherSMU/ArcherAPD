@@ -29,7 +29,7 @@ public class DictionaryAttackApplication {
         HashService hashService = new HashService();
         CrackingEngine crackingEngine = new ParallelStreamsCrackingEngine(hashService, progressTracker);
         
-        this.passwordCracker = new PasswordCracker(crackingEngine);
+        this.passwordCracker = new PasswordCracker(crackingEngine, progressTracker);
     }
     
     /**
