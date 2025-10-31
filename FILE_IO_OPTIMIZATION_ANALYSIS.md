@@ -175,36 +175,18 @@ Our workload is:
 **File Writing (unchanged)**:
 - Still using BufferedWriter (didn't optimize this)
 
-## Alternative Optimization Strategies
+## What We Did Instead
 
-### 1. Keep BufferedReader ✅ (Current Champion)
+### 1. Kept BufferedReader ✅ (IMPLEMENTED)
 - Already optimal for our use case
-- 59ms is excellent
-- No need to optimize further
+- Reverted memory-mapped files
+- Current best: 59ms with BufferedReader
 
-### 2. Reduce Progress Reporting ⚡ (Easy Win)
-- Current: 100 prints (~9ms overhead)
-- Proposed: 10 prints
-- **Estimated savings: ~8ms**
-- **New total: ~51ms**
-
-### 3. Parallel File Reading ⚡ (Moderate Complexity)
-- Read dictionary and input file in parallel
-- Both files loaded simultaneously
-- **Estimated savings: ~15ms** (overlap I/O)
-- **New total: ~44ms**
-
-### 4. Binary File Format ⚡⚡ (High Effort)
-- Pre-process CSV to binary format
-- Fixed-width records
-- No parsing overhead
-- **Estimated savings: ~20ms**
-- **New total: ~39ms**
-- **Downside**: Requires preprocessing step
-
-### 5. In-Memory Caching 🚫 (Not Applicable)
-- Only works for repeated runs
-- Our use case is single-run batch processing
+### 2. Removed Progress Reporting ✅ (IMPLEMENTED)
+- Removed: 100 console prints
+- **Actual savings: ~25ms** (better than estimated!)
+- **New total: 33ms**
+- See commit: "Performance optimization: Remove progress reporting during lookup (1.74x speedup - 58ms to 33ms)"
 
 ## Lessons Learned
 
@@ -235,7 +217,7 @@ Our workload is:
 
 ## Recommendation
 
-### ✅ REVERT to BufferedReader
+### ✅ REVERTED to BufferedReader (IMPLEMENTED)
 **Reasons**:
 1. **4ms faster** (7% improvement by reverting!)
 2. **More stable** (less variance)
@@ -243,27 +225,7 @@ Our workload is:
 4. **Correct UTF-8** handling
 5. **Industry standard** approach
 
-### 🎯 Next Optimization Target
-
-**Reduce Progress Reporting** (Easy, 8ms savings):
-```java
-// Change from:
-if (count % 100 == 0) { ... }  // 100 prints
-
-// To:
-if (count % 1000 == 0) { ... }  // 10 prints
-```
-
-**Parallel File Loading** (Moderate, 15ms savings):
-```java
-CompletableFuture<List<String>> dictFuture = 
-    CompletableFuture.supplyAsync(() -> loadDictionary());
-CompletableFuture<List<User>> usersFuture = 
-    CompletableFuture.supplyAsync(() -> loadTargetHashes());
-
-// Wait for both to complete
-CompletableFuture.allOf(dictFuture, usersFuture).join();
-```
+**Status**: ✅ Completed - code reverted to BufferedReader
 
 ## Conclusion
 
@@ -276,15 +238,17 @@ CompletableFuture.allOf(dictFuture, usersFuture).join();
 
 ### Performance Summary
 - **Goal**: Reduce 48ms file I/O bottleneck
-- **Result**: Increased to 54ms (+13%)
+- **Experiment Result**: Increased to 54ms (+13% regression)
 - **Root cause**: BufferedReader already optimal for small sequential reads
-- **Action**: Revert to BufferedReader
+- **Action Taken**: Reverted to BufferedReader (implemented ✅)
+- **Final Outcome**: Optimized elsewhere (progress reporting removal → 33ms total)
 
 ### Grade
 **Technical Implementation**: A (correct, working code)  
 **Performance Impact**: F (regression, not improvement)  
-**Learning Value**: A+ (excellent lesson in profiling and trade-offs)
+**Learning Value**: A+ (excellent lesson in profiling and trade-offs)  
+**Final Resolution**: ✅ Reverted successfully, found better optimization target
 
 ---
 
-**Final Verdict**: Sometimes the "boring" solution (BufferedReader) is the right one. Optimization requires measurement, not assumptions.
+**Final Verdict**: Sometimes the "boring" solution (BufferedReader) is the right one. Optimization requires measurement, not assumptions. The real win came from eliminating console I/O overhead instead.

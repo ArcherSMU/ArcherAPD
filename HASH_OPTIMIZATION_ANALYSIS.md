@@ -98,16 +98,17 @@ The ThreadLocal buffer optimization **would** show benefits in:
 
 ### Recommendation
 
-**Keep the optimization** because:
+**Kept the optimization** because:
 - No downsides (same performance, cleaner code)
 - Better for production environments
 - Demonstrates understanding of Java memory management
 - Makes the code more robust for future scaling
 
-**Next optimization target** should be:
-- File I/O optimization (memory-mapped files, parallel readers)
-- Progress reporting frequency reduction
-- Consider binary file format for faster parsing
+**What we did next** (implemented ✅):
+- ✅ Removed progress reporting (100 prints) → saved ~25ms
+- ✅ Applied JVM tuning (-XX:+UseSerialGC, fixed heap, C1) → saved ~51ms
+- ✅ **Final result: 33ms total (15.8x faster than original 523ms)**
+- ❌ File I/O optimization (memory-mapped files) → reverted due to regression
 
 ## Technical Details
 
