@@ -1,6 +1,7 @@
 package org.example.service;
 
 import org.example.model.CrackResult;
+import org.example.model.CrackingStatistics;
 import org.example.model.User;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public class PasswordCracker {
     
     private final CrackingEngine crackingEngine;
     private final ProgressTracker progressTracker;
+    private final CrackingStatistics statistics;
+    private final StatusReporterService statusReporter;
     
     /**
      * Creates a PasswordCracker with a specific cracking engine.
@@ -25,6 +28,8 @@ public class PasswordCracker {
     public PasswordCracker(CrackingEngine crackingEngine, ProgressTracker progressTracker) {
         this.crackingEngine = crackingEngine;
         this.progressTracker = progressTracker;
+        this.statistics = new CrackingStatistics();
+        this.statusReporter = new StatusReporterService(statistics);
     }
     
     /**
@@ -58,7 +63,7 @@ public class PasswordCracker {
     
     /**
      * Looks up passwords for all users using the hash table.
-     * No progress reporting during lookup for maximum performance.
+     * Progress reported by background thread every 1000 users.
      * 
      * @param users List of users
      * @param hashToPassword Hash lookup table
@@ -67,16 +72,29 @@ public class PasswordCracker {
     private int lookupUserPasswords(List<User> users, Map<String, String> hashToPassword) {
         int passwordsFound = 0;
         
-        for (User user : users) {
-            String crackedPassword = hashToPassword.get(user.getHashedPassword());
-            
-            if (crackedPassword != null) {
-                user.setFoundPassword(crackedPassword);
-                passwordsFound++;
+        // Setup statistics and start background reporter
+        statistics.setTotalTasks(users.size());
+        statistics.recordStartTime();
+        statusReporter.start();
+        
+        try {
+            for (User user : users) {
+                String crackedPassword = hashToPassword.get(user.getHashedPassword());
+                
+                if (crackedPassword != null) {
+                    user.setFoundPassword(crackedPassword);
+                    passwordsFound++;
+                    statistics.incrementPasswordsFound();
+                }
+                
+                statistics.incrementTasksProcessed(); // Atomic increment - minimal overhead
             }
+        } finally {
+            statusReporter.stop();
         }
         
-        // Report final result only
+        // Report final result
+        System.out.println("");
         System.out.println("Password lookup complete: " + passwordsFound + " / " + users.size() + " passwords found");
         
         return passwordsFound;
